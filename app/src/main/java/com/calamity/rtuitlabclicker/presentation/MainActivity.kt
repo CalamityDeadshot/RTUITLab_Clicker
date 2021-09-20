@@ -1,7 +1,8 @@
-package com.calamity.rtuitlabclicker
+package com.calamity.rtuitlabclicker.presentation
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import com.calamity.rtuitlabclicker.R
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
