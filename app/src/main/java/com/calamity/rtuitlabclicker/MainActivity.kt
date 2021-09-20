@@ -1,4 +1,4 @@
-package com.app.rtuitlabclicker
+package com.calamity.rtuitlabclicker
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
