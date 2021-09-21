@@ -28,8 +28,6 @@ class MainActivity : AppCompatActivity() {
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment_container) as NavHostFragment
         navController = navHostFragment.findNavController()
 
-        setupActionBarWithNavController(navController)
-
 
         this.lifecycleScope.launchWhenStarted {
             viewModel.user.observe(this@MainActivity) {
