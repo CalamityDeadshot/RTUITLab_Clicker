@@ -3,19 +3,12 @@ package com.calamity.rtuitlabclicker.data.repository
 import android.content.SharedPreferences
 import android.util.Log
 import com.calamity.rtuitlabclicker.common.Constants
-import com.calamity.rtuitlabclicker.common.Variables
-import com.calamity.rtuitlabclicker.common.enqueue
-import com.calamity.rtuitlabclicker.data.local.UsersDatabase
 import com.calamity.rtuitlabclicker.data.local.dao.UserDao
 import com.calamity.rtuitlabclicker.data.remote.GithubApi
 import com.calamity.rtuitlabclicker.data.remote.GithubAuthApi
-import com.calamity.rtuitlabclicker.data.remote.dto.AccessToken
 import com.calamity.rtuitlabclicker.data.remote.dto.toUser
 import com.calamity.rtuitlabclicker.domain.model.User
 import com.calamity.rtuitlabclicker.domain.repository.UserRepository
-import com.google.gson.Gson
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class UserRepositoryImpl @Inject constructor(
@@ -31,82 +24,55 @@ class UserRepositoryImpl @Inject constructor(
     override suspend fun getUserByName(name: String): User =
         userDao.getUserByName(name)
 
-    override suspend fun getUserInfo(token: String) =
-        api.getUserInfo("token $token")
-            .enqueue {
-                onResponse = { response ->
-                    Log.v("API", response.body()?.toString()!!)
-                    val user = response.body()!!.toUser()
-                    // Determine if user is already present
-                    GlobalScope.launch {
-                        val users = getUsers()
-                        if (users.isEmpty()) {
-                            addUser(user)
-                            return@launch
-                        }
-                        users.forEach {
-                            if (it.name == user.name) {
-                                addUser(it)
-                                return@forEach
-                            }
-                        }
-                    }
-                }
+    override suspend fun getUserInfo(token: String): User? {
+        val user = api.getUserInfo("token $token").toUser()
+        Log.v("API", "got user id ${user.id} from api")
+        val users = getUsers()
+        if (users.isEmpty()) {
+            addUser(user)
+            return user
+        }
+        getUsers().forEach {
+            if (it.name == user.name) {
+                update(user)
+                return@forEach
             }
-
-    private suspend fun addUser(user: User) {
-        val newUserData = user.copy(
-            counter = user.counter,
-            id = user.id
-        )
-            insert(newUserData)
-        Variables.activeUser.value = newUserData
-        prefs.edit()
-            .putString(Constants.SHARED_PREFS_KEY, newUserData.toString()).apply()
+        }
+        return user
     }
 
-    override suspend fun getUserInfoFromCode(code: String) {
+    private suspend fun addUser(user: User) {
+        insert(user)
+        val userId = getUserByName(user.name).id
+        Log.v("LOCAL", "put $userId as user id to prefs")
+        prefs.edit()
+            .putInt(Constants.SHARED_PREFS_KEY, userId).apply()
+    }
+
+    override suspend fun getUserInfoFromCode(code: String): User? {
         Log.v("API", "parameters ${Constants.CLIENT_ID}, ${Constants.CLIENT_SECRETS}, $code")
-        authApi.getToken(Constants.CLIENT_ID, Constants.CLIENT_SECRETS, code)
-            .enqueue {
-                onResponse = { response ->
-                    Log.v("API", response.raw().message())
-                    GlobalScope.launch {
-                        getUserInfo(response.body()?.accessToken!!)
-                    }
-                }
-                onFailure = {
-                    Log.v("API", it?.message!!)
-                }
-            }
+        return getUserInfo(authApi.getToken(Constants.CLIENT_ID, Constants.CLIENT_SECRETS, code).accessToken)
     }
 
     override suspend fun getLocalUserInfo(): User? {
-        val userStr = prefs.getString(Constants.SHARED_PREFS_KEY, "")!!
-        if (userStr.isEmpty()) {
-            Variables.activeUser.value = null
+        val userId = prefs.getInt(Constants.SHARED_PREFS_KEY, -1)
+        Log.v("LOCAL", "got active id of $userId")
+        if (userId == -1) {
             return null
         }
-        val user = Gson().fromJson(userStr, User::class.java)
-        Variables.activeUser.value = user
-        return user
+        return getUserById(userId)
     }
+
+    override fun getUserById(id: Int): User? = userDao.getUserById(id)
 
 
     override suspend fun update(user: User) {
         userDao.update(user)
-        prefs.edit().putString(Constants.SHARED_PREFS_KEY, user.toString()).apply()
+        prefs.edit().putInt(Constants.SHARED_PREFS_KEY, user.id).apply()
     }
 
     override suspend fun updateFromApi(userFromApi: User) {
-        val existingUser = getUserByName(userFromApi.name)
-        update(User(
-            authToken = existingUser.authToken,
-            name = userFromApi.name,
-            profileImageUri = userFromApi.profileImageUri,
-            counter = existingUser.counter,
-            id = existingUser.id
-        ))
+        update(userFromApi)
     }
 
     override suspend fun delete(user: User) =

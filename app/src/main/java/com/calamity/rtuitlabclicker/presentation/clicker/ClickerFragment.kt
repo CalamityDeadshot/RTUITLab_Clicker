@@ -33,18 +33,18 @@ class ClickerFragment : Fragment(R.layout.fragment_clicker) {
         val binding = FragmentClickerBinding.bind(view)
 
         lifecycleScope.launch {
-            viewModel.state.observe(viewLifecycleOwner) {
-                Log.v("observer", "tick, null? ${it.user}")
-                if (it.user != null) {
-                    val user = it.user
+            viewModel.user.observe(viewLifecycleOwner) { user ->
+                Log.v("observer", "tick, null? $user")
+                if (user != null) {
                     Picasso.get().load(user.profileImageUri).into(avatar)
                     user_name.text = user.name
+                    clicks.text = "Clicks: ${user.counter}"
                 }
             }
 
-            viewModel.counter.observe(viewLifecycleOwner) {
+            /*viewModel.counter.observe(viewLifecycleOwner) {
                 clicks.text = "Clicks: $it"
-            }
+            }*/
         }
 
         binding.apply {

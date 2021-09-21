@@ -12,8 +12,8 @@ interface UserDao {
     @Query("SELECT * FROM users WHERE name = :name")
     fun getUserByName(name: String): User
 
-    @Query("SELECT * FROM users WHERE name = :id")
-    fun getUserById(id: Int): User
+    @Query("SELECT * FROM users WHERE id = :id")
+    fun getUserById(id: Int): User?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(user: User)

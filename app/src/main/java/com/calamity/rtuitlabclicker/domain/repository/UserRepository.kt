@@ -9,11 +9,13 @@ interface UserRepository {
 
     suspend fun getUserByName(name: String): User
 
-    suspend fun getUserInfo(token: String)
+    suspend fun getUserInfo(token: String): User?
 
-    suspend fun getUserInfoFromCode(code: String)
+    suspend fun getUserInfoFromCode(code: String): User?
 
     suspend fun getLocalUserInfo(): User?
+
+    fun getUserById(id: Int): User?
 
     suspend fun update(user: User)
 

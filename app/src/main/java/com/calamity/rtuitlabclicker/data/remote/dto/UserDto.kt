@@ -90,5 +90,6 @@ fun UserDto.toUser(): User =
         authToken = "",
         name = login,
         profileImageUri = avatarUrl,
-        counter = 0
+        counter = 0,
+        id = id
     )

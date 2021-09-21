@@ -8,6 +8,6 @@ object Constants {
     const val CLIENT_SECRETS =   BuildConfig.CLIENT_SECRETS
     const val OAUTH_URL =        "https://github.com/login/oauth/"
     const val BASE_URL =         "https://api.github.com/"
-    const val SHARED_PREFS_FILE = "active_user"
-    const val SHARED_PREFS_KEY = "ACTIVE_USER"
+    const val SHARED_PREFS_FILE = "active_user_id"
+    const val SHARED_PREFS_KEY = "ACTIVE_USER_ID"
 }

@@ -7,7 +7,7 @@ import retrofit2.http.Header
 
 interface GithubApi {
     @GET("user")
-    fun getUserInfo(
+    suspend fun getUserInfo(
         @Header("Authorization") token: String
-    ): Call<UserDto>
+    ): UserDto
 }

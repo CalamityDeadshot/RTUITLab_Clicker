@@ -1,18 +1,16 @@
 package com.calamity.rtuitlabclicker.presentation
 
-import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.viewModels
-import androidx.lifecycle.asLiveData
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.calamity.rtuitlabclicker.R
 import com.calamity.rtuitlabclicker.common.Constants
-import com.calamity.rtuitlabclicker.common.Variables
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -33,12 +31,14 @@ class MainActivity : AppCompatActivity() {
         setupActionBarWithNavController(navController)
 
 
-        Variables.activeUser.asLiveData().observe(this) {
-            Log.v("API", "token from observer: ${it?.authToken}")
-            if (it != null) {
-                try {
-                    navController.navigate(R.id.action_authenticationFragment_to_clickerFragment)
-                } catch (e: Exception) {}
+        this.lifecycleScope.launchWhenStarted {
+            viewModel.user.observe(this@MainActivity) {
+                Log.v("API", "token from observer: ${it?.authToken}")
+                if (it != null) {
+                    try {
+                        navController.navigate(R.id.action_authenticationFragment_to_clickerFragment)
+                    } catch (e: Exception) {}
+                }
             }
         }
     }
@@ -55,7 +55,7 @@ class MainActivity : AppCompatActivity() {
         if (uri != null && uri.toString().startsWith(Constants.REDIRECT_URL)) {
             val code = uri.getQueryParameter("code")
             Log.v("API", "code: $code")
-            viewModel.getAccessToken(code!!)
+            viewModel.getUserInfo(code!!)
         }
     }
 

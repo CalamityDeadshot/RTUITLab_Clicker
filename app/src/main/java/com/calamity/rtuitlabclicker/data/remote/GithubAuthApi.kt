@@ -10,9 +10,9 @@ interface GithubAuthApi {
     @Headers("Accept: application/json")
     @POST("access_token")
     @FormUrlEncoded
-    fun getToken(
+    suspend fun getToken(
         @Field("client_id") clientId: String,
         @Field("client_secret") clientSecret: String,
         @Field("code") code: String
-    ) : Call<AccessToken>
+    ) : AccessToken
 }

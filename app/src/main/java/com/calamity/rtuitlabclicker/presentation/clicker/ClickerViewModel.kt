@@ -4,55 +4,44 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.calamity.rtuitlabclicker.common.Resource
-import com.calamity.rtuitlabclicker.common.Variables
 import com.calamity.rtuitlabclicker.domain.model.User
 import com.calamity.rtuitlabclicker.domain.repository.UserRepository
-import com.calamity.rtuitlabclicker.domain.use_cases.GetUserInfoUseCase
-import com.calamity.rtuitlabclicker.domain.use_cases.UpdateUserInfoUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class ClickerViewModel @Inject constructor(
-    private val repository: UserRepository,
-    private val getUserInfoUseCase: GetUserInfoUseCase,
-    private val updateUserInfoUseCase: UpdateUserInfoUseCase
+    private val repository: UserRepository
 ) : ViewModel() {
 
-/*    private val _state = MutableStateFlow(ClickerState(user = Variables.activeUser.value, counter = Variables.activeUser.value?.counter ?: -1))
-    val state: StateFlow<ClickerState> = _state*/
-    private val _state = MutableLiveData<ClickerState>(ClickerState(Variables.activeUser.value, Variables.activeUser.value?.counter ?: -1))
-    val state: LiveData<ClickerState> = _state
+    private val _user = MutableLiveData<User>()
 
-    private val _counter = MutableLiveData<Long>(Variables.activeUser.value?.counter ?: -1)
-    val counter: LiveData<Long> = _counter
+    val user: LiveData<User> = _user
 
     init {
         getUser()
     }
 
-    private fun getUser() = viewModelScope.launch {
+    private fun getUser() = viewModelScope.launch(Dispatchers.IO) {
         val user = repository.getLocalUserInfo()
-        _state.value = ClickerState(user, user?.counter!!)
-
+        _user.postValue(user!!)
     }
 
-    fun onClick() {
-        _counter.value = counter.value?.plus(1)
-        val user = Variables.activeUser.value!!
-        viewModelScope.launch {
-            repository.update(
-                user.copy(
-                    authToken = user.authToken,
-                    name = user.name,
-                    profileImageUri = user.profileImageUri,
-                    counter = _counter.value!!,
-                    id = user.id
-                )
+    fun onClick() = viewModelScope.launch {
+        val user = user.value
+        repository.update(
+            user!!.copy(
+                authToken = user.authToken,
+                name = user.name,
+                profileImageUri = user.profileImageUri,
+                counter = user.counter + 1,
+                id = user.id
             )
-        }
+        )
+        getUser()
     }
+
 }

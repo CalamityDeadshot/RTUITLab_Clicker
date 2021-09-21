@@ -67,7 +67,7 @@ object AppModule {
     @Singleton
     fun provideSharedPrefs(
         @ApplicationContext context: Context
-    ) = context.getSharedPreferences("active_user", Context.MODE_PRIVATE)
+    ) = context.getSharedPreferences(Constants.SHARED_PREFS_FILE, Context.MODE_PRIVATE)!!
 
 
     @ApplicationScope
