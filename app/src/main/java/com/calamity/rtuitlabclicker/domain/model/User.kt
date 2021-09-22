@@ -10,7 +10,7 @@ data class User(
     val name: String,
     val profileImageUri: String,
     val counter: Long,
-    @PrimaryKey(autoGenerate = true) var id: Int = 0
+    @PrimaryKey(autoGenerate = true) val id: Int
 ) {
     override fun toString(): String =
         Gson().toJson(this)

@@ -17,7 +17,13 @@
     <fragment
         android:id="@+id/clickerFragment"
         android:name="com.calamity.rtuitlabclicker.presentation.clicker.ClickerFragment"
-        android:label="ClickerFragment" />
+        android:label="ClickerFragment" >
+        <action
+            android:id="@+id/action_clickerFragment_to_authenticationFragment"
+            app:destination="@id/authenticationFragment"
+            app:popUpTo="@id/clickerFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
     <fragment
         android:id="@+id/startFragment"
         android:name="com.calamity.rtuitlabclicker.presentation.start.StartFragment"

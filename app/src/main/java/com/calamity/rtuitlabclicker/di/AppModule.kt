@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.room.Room
 import com.calamity.rtuitlabclicker.common.Constants
+import com.calamity.rtuitlabclicker.common.RetrofitUtilsProvider
 import com.calamity.rtuitlabclicker.data.local.UsersDatabase
 import com.calamity.rtuitlabclicker.data.local.dao.UserDao
 import com.calamity.rtuitlabclicker.data.remote.GithubApi
@@ -46,6 +47,7 @@ object AppModule {
         Retrofit.Builder()
             .addConverterFactory(GsonConverterFactory.create())
             .baseUrl(Constants.BASE_URL)
+            .client(RetrofitUtilsProvider.getLoggingInterceptor())
             .build()
             .create(GithubApi::class.java)
 
@@ -55,6 +57,7 @@ object AppModule {
         Retrofit.Builder()
             .addConverterFactory(GsonConverterFactory.create())
             .baseUrl(Constants.OAUTH_URL)
+            .client(RetrofitUtilsProvider.getLoggingInterceptor())
             .build()
             .create(GithubAuthApi::class.java)
 

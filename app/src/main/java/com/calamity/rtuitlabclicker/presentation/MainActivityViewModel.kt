@@ -19,11 +19,16 @@ class MainActivityViewModel @Inject constructor(
     private val repo: UserRepository
 ) : ViewModel() {
 
-    private val _user = MutableLiveData<User>()
+    private val _user = MutableLiveData<User?>()
+    val user: LiveData<User?> = _user
 
-    val user: LiveData<User> = _user
+    var intentProcessed = false
 
     fun getUserInfo(code: String) = viewModelScope.launch(Dispatchers.IO) {
         _user.postValue(repo.getUserInfoFromCode(code))
+    }
+
+    fun onLogout() {
+        _user.value = null
     }
 }

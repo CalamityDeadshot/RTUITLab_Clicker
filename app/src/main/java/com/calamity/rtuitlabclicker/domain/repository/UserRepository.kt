@@ -17,6 +17,8 @@ interface UserRepository {
 
     fun getUserById(id: Int): User?
 
+    suspend fun logOut()
+
     suspend fun update(user: User)
 
     suspend fun updateFromApi(userFromApi: User)

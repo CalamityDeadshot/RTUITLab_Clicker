@@ -17,9 +17,9 @@ class ClickerViewModel @Inject constructor(
     private val repository: UserRepository
 ) : ViewModel() {
 
-    private val _user = MutableLiveData<User>()
+    private val _user = MutableLiveData<User?>()
 
-    val user: LiveData<User> = _user
+    val user: LiveData<User?> = _user
 
     init {
         getUser()
@@ -27,20 +27,27 @@ class ClickerViewModel @Inject constructor(
 
     private fun getUser() = viewModelScope.launch(Dispatchers.IO) {
         val user = repository.getLocalUserInfo()
-        _user.postValue(user!!)
+        _user.postValue(user)
     }
 
     fun onClick() = viewModelScope.launch {
         val user = user.value
-        repository.update(
-            user!!.copy(
-                authToken = user.authToken,
-                name = user.name,
-                profileImageUri = user.profileImageUri,
-                counter = user.counter + 1,
-                id = user.id
+        if (user != null) {
+            repository.update(
+                user.copy(
+                    authToken = user.authToken,
+                    name = user.name,
+                    profileImageUri = user.profileImageUri,
+                    counter = user.counter + 1,
+                    id = user.id
+                )
             )
-        )
+        }
+        getUser()
+    }
+
+    fun logOut() = viewModelScope.launch(Dispatchers.IO){
+        repository.logOut()
         getUser()
     }
 

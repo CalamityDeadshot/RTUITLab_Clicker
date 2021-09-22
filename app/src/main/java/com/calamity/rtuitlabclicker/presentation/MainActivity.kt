@@ -20,6 +20,7 @@ class MainActivity : AppCompatActivity() {
 
     private val viewModel: MainActivityViewModel by viewModels()
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -28,6 +29,8 @@ class MainActivity : AppCompatActivity() {
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment_container) as NavHostFragment
         navController = navHostFragment.findNavController()
 
+
+        Log.v("Lifecycle", "precessed ${viewModel.intentProcessed}")
 
         this.lifecycleScope.launchWhenStarted {
             viewModel.user.observe(this@MainActivity) {
@@ -48,12 +51,17 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
+        // If this activity gets recreated after logout, it will still hold the information about the intent
+        // and make user request, which results an error. To prevent that, this check is needed
+        if (viewModel.intentProcessed) return
+
         val uri = intent.data
         Log.v("API", "uri: ${uri.toString()}")
         if (uri != null && uri.toString().startsWith(Constants.REDIRECT_URL)) {
-            val code = uri.getQueryParameter("code")
+            val code = uri.getQueryParameter("code") ?: return
             Log.v("API", "code: $code")
-            viewModel.getUserInfo(code!!)
+            viewModel.getUserInfo(code)
+            viewModel.intentProcessed = true
         }
     }
 
